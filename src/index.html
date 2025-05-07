@@ -216,7 +216,6 @@
     nextBtn.addEventListener('click', async () => {
         currentIndex++;
         if (currentIndex >= words.length) {
-            alert('You’ve finished all the words!');
             inputSection.classList.remove('hidden');
             flashcardSection.classList.add('hidden');
             return;
