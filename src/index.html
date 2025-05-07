@@ -76,6 +76,25 @@
     let gradeLevel = '';
     let preloadedSentence = null;
 
+    // === On load, populate fields from localStorage ===
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedApiKey = localStorage.getItem('apiKey');
+        const savedProvider = localStorage.getItem('provider');
+        const savedGrade = localStorage.getItem('gradeLevel');
+        const savedWords = localStorage.getItem('wordInput');
+
+        if (savedApiKey) apiKeyInput.value = savedApiKey;
+        if (savedProvider) providerSelect.value = savedProvider;
+        if (savedGrade) gradeSelect.value = savedGrade;
+        if (savedWords) wordInput.value = savedWords;
+    });
+
+    // === Save on change ===
+    apiKeyInput.addEventListener('input', () => localStorage.setItem('apiKey', apiKeyInput.value));
+    providerSelect.addEventListener('change', () => localStorage.setItem('provider', providerSelect.value));
+    gradeSelect.addEventListener('change', () => localStorage.setItem('gradeLevel', gradeSelect.value));
+    wordInput.addEventListener('input', () => localStorage.setItem('wordInput', wordInput.value));
+
     async function fetchSentence(word) {
         const prompt = `Use "${word}" in a sentence. Write it at a ${gradeLevel} level.`;
 
