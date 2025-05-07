@@ -15,7 +15,6 @@
         <label class="block mb-2 text-gray-700">AI Provider:</label>
         <select id="providerSelect" class="w-full border rounded-lg p-2 mb-4">
             <option value="openai">OpenAI</option>
-            <option value="claude">Claude (Anthropic)</option>
             <option value="gemini">Gemini (Google)</option>
         </select>
 
@@ -108,7 +107,7 @@
                     "Authorization": `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: "text-davinci-003",
+                    model: "o4-mini",
                     prompt: prompt,
                     max_tokens: 50,
                     temperature: 0.7
