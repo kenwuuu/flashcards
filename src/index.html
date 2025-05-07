@@ -135,22 +135,19 @@
 
     async function preloadNextSentence() {
         if (currentIndex + 1 >= words.length) {
-            preloadedSentence = null;
+            preloadedSentencePromise = null;
             return;
         }
         const nextWord = words[currentIndex + 1];
-        try {
-            preloadedSentence = await fetchSentence(nextWord);
-        } catch (err) {
-            preloadedSentence = `Error fetching "${nextWord}": ${err.message}`;
-        }
+        preloadedSentencePromise = fetchSentence(nextWord)
+            .catch(err => `Error fetching "${nextWord}": ${err.message}`);
     }
 
     async function showSentence() {
         const word = words[currentIndex];
 
         let sentence;
-        if (currentIndex === 0 || !preloadedSentence) {
+        if (currentIndex === 0 || !preloadedSentencePromise) {
             sentenceDisplay.textContent = 'Loading...';
             try {
                 sentence = await fetchSentence(word);
@@ -158,11 +155,12 @@
                 sentence = `Error: ${err.message}`;
             }
         } else {
-            sentence = preloadedSentence;
+            sentence = await preloadedSentencePromise;
         }
 
         sentenceDisplay.textContent = sentence;
         progress.textContent = `${currentIndex + 1} / ${words.length}`;
+
         preloadNextSentence();
     }
 
