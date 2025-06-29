@@ -95,9 +95,24 @@
     gradeSelect.addEventListener('change', () => localStorage.setItem('gradeLevel', gradeSelect.value));
     wordInput.addEventListener('input', () => localStorage.setItem('wordInput', wordInput.value));
 
+    function getPrompt(word, gradeLevel) {
+        const prompt = `Prompt: "Generate one single sentence for each word I provide, using any sense or grammatical form of the word (e.g., noun/verb/adjective, literal/figurative, common/rare). Vary contexts aggressively—avoid repeating the same sense twice in a row."
+
+                    Rules:
+                    Randomize: Prioritize less obvious uses (e.g., 'pilot episode' over 'airplane pilot').
+                    Morphology: Use derived forms (e.g., 'piloted', 'piloting') freely.
+                    Bias toward novelty: If a word has multiple senses, default to the least likely one unless instructed otherwise.
+                    Examples:
+                    Word: pilot → "The chef piloted a new recipe through rigorous testing before the menu launch."
+                    Word: light → "Her thesis shed light on the paradox, but left room for debate."
+
+                    Now generate a ${gradeLevel} level sentence for this word: ${word}`;
+
+        return prompt;
+    }
+
     async function fetchSentence(word) {
-        const prompt = `You are a language teacher. Use "${word}" in a sentence that a ${gradeLevel} could read. Only
-        write the sentence, do not add fluff.`;
+        const prompt = getPrompt(word, gradeLevel)
 
         if (provider === 'openai') {
             const response = await fetch("https://api.openai.com/v1/completions", {
