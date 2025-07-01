@@ -40,6 +40,13 @@
             <option value="post graduate">Graduate</option>
         </select>
 
+        <label class="block mb-2 text-gray-700">Select language:</label>
+        <select id="languageSelect" class="w-full border rounded-lg p-2 mb-4">
+            <option value="en">English</option>
+            <option value="zh">Chinese</option>
+            <!-- Add more languages as needed -->
+        </select>
+
         <label class="block mb-2 text-gray-700">Enter your words (comma or newline separated):</label>
         <textarea id="wordInput" rows="6" class="w-full border rounded-lg p-2 mb-4"></textarea>
 
@@ -63,6 +70,7 @@
     const apiKeyInput = document.getElementById('apiKeyInput');
     const gradeSelect = document.getElementById('gradeSelect');
     const wordInput = document.getElementById('wordInput');
+    const languageSelect = document.getElementById('languageSelect');
     const inputSection = document.getElementById('input-section');
     const flashcardSection = document.getElementById('flashcard-section');
     const sentenceDisplay = document.getElementById('sentenceDisplay');
@@ -82,11 +90,14 @@
         const savedProvider = localStorage.getItem('provider');
         const savedGrade = localStorage.getItem('gradeLevel');
         const savedWords = localStorage.getItem('wordInput');
+        const savedLanguage = localStorage.getItem('languageCode');
+
 
         if (savedApiKey) apiKeyInput.value = savedApiKey;
         if (savedProvider) providerSelect.value = savedProvider;
         if (savedGrade) gradeSelect.value = savedGrade;
         if (savedWords) wordInput.value = savedWords;
+        if (savedLanguage) languageSelect.value = savedLanguage;
     });
 
     // === Save on change ===
@@ -94,21 +105,43 @@
     providerSelect.addEventListener('change', () => localStorage.setItem('provider', providerSelect.value));
     gradeSelect.addEventListener('change', () => localStorage.setItem('gradeLevel', gradeSelect.value));
     wordInput.addEventListener('input', () => localStorage.setItem('wordInput', wordInput.value));
+    languageSelect.addEventListener('change', () => localStorage.setItem('languageCode', languageSelect.value));
 
     function getPrompt(word, gradeLevel) {
-        const prompt = `Prompt: "Generate one single sentence for each word I provide, using any sense or grammatical form of the word (e.g., noun/verb/adjective, literal/figurative, common/rare). Vary contexts aggressively—avoid repeating the same sense twice in a row."
+        // language must be a two character ISO code: https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes#Table_of_all_possible_two-letter_codes
+        languageCode = languageSelect.value;
+
+        let prompt;
+        switch (languageCode) {
+            case "en":
+                prompt = `Given a word, write a sentence using any sense or grammatical form of the word (e.g., noun/verb/adjective, literal/figurative, common/rare). Vary contexts aggressively—avoid repeating the same sense twice in a row.
 
                     Rules:
                     Randomize: Prioritize less obvious uses (e.g., 'pilot episode' over 'airplane pilot').
-                    Morphology: Use derived forms (e.g., 'piloted', 'piloting') freely.
+                    Morphology: You must use a derived form (e.g., 'piloted', 'piloting').
+                    Bias toward novelty: If a word has multiple senses, prefer less common ones.
+                    Examples:
+                    Word: pilot → "The chef piloted a new recipe through rigorous testing before the menu launch."
+                    Word: light → "Her thesis shed light on the paradox, but left room for debate."
+
+                    Write five ${gradeLevel} level sentences, each using a different context. This word must be included
+                    in your sentence: ${word}`;
+                return prompt;
+            case "zh":
+                prompt = `Given a word, write a sentence, in the native language of the word, using any sense or grammatical form of the word (e.g., noun/verb/adjective, literal/figurative, common/rare). Vary contexts aggressively—avoid repeating the same sense twice in a row.
+
+                    Rules:
+                    Randomize: Prioritize less obvious uses (e.g., 'pilot episode' over 'airplane pilot').
+                    Morphology: You must use a derived form (e.g., 'piloted', 'piloting').
                     Bias toward novelty: If a word has multiple senses, default to the least likely one unless instructed otherwise.
                     Examples:
                     Word: pilot → "The chef piloted a new recipe through rigorous testing before the menu launch."
                     Word: light → "Her thesis shed light on the paradox, but left room for debate."
 
-                    Now generate a ${gradeLevel} level sentence for this word: ${word}`;
-
-        return prompt;
+                    Write five ${gradeLevel} level sentences, each using a different form, sense, and tense of this
+                    word, but don't force it: ${word}`;
+                return prompt;
+        }
     }
 
     async function fetchSentence(word) {
